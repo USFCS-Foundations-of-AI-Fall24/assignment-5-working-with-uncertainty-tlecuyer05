@@ -35,16 +35,55 @@ class HMM:
 
     ## part 1 - you do this.
     def load(self, basename):
-        """reads HMM structure from transition (basename.trans),
-        and emission (basename.emit) files,
-        as well as the probabilities."""
-        pass
+        emissions = {}
+        transitions = {}
+        #Read the emissions
+        with open(basename+".emit", 'r') as file:
+            emissionsFile = file.read()
+            for line in emissionsFile.split("\n"):
+                currLines = line.split(" ")
+                emissionState = currLines[0]
+                emissionProbability = currLines[-1]
+                for state in currLines[1:-1]:
+                    if emissionState not in emissions:
+                        emissions[emissionState] = {}
+                    emissions[emissionState][state] = emissionProbability
+        #Read the transitions
+        with open(basename+".trans", 'r') as file:
+            transitionsFile = file.read()
+            for line in transitionsFile.split("\n"):
+                currLines = line.split(" ")
+                transitionState = currLines[0]
+                transitionProbability = currLines[-1]
+                for state in currLines[1:-1]:
+                    if transitionState not in transitions:
+                        transitions[transitionState] = {}
+                    transitions[transitionState][state] = transitionProbability
+        self.emissions = emissions
+        self.transitions = transitions
 
-
-   ## you do this.
+    ## you do this.
     def generate(self, n):
+        transitions = []
+        observations = []
+        states = [i for i in self.transitions['#']]
+        probabilities = [float(self.transitions['#'][i]) for i in self.transitions['#']]
+        curr_state = random.choices(states, weights=probabilities, k=1)[0]
+        i = 0
+        while i < 20:
+            emissionStates = [i for i in self.emissions[curr_state]]
+            emissionProbabilities = [float(self.emissions[curr_state][i]) for i in self.emissions[curr_state]]
+            transitions.append(curr_state)
+            observation = random.choices(emissionStates, weights=emissionProbabilities, k=1)
+            observations.append(observation[0])
+            states = [i for i in self.transitions[curr_state]]
+            probabilities = [float(self.transitions[curr_state][i]) for i in self.transitions[curr_state]]
+            curr_state = random.choices(states, weights=probabilities, k=1)[0]
+            i+=1
+
+
         """return an n-length Sequence by randomly sampling from this HMM."""
-        pass
+        return transitions, observations
 
     def forward(self, sequence):
         pass
@@ -63,6 +102,16 @@ class HMM:
 
 
 
-
-
-
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename", type=str, help="Filename")
+    parser.add_argument("--generate", type=int, help="Amount to generate")
+    args = parser.parse_args()
+    h = HMM()
+    h.load(args.filename)
+    t, o = h.generate(args.generate)
+    print("Transitions: ")
+    [print(item, end=' ') for item in t]
+    print("\nObservations: ")
+    [print(item, end=' ') for item in o]
+    print("\n")
