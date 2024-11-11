@@ -1,5 +1,5 @@
 
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_digits
 from sklearn import tree
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
@@ -11,14 +11,14 @@ import joblib
 ### This code shows how to use KFold to do cross_validation.
 ### This is just one of many ways to manage training and test sets in sklearn.
 
-iris = load_iris()
+iris = load_digits()
 X, y = iris.data, iris.target
 scores = []
 kf = KFold(n_splits=5)
 for train_index, test_index in kf.split(X) :
     X_train, X_test, y_train, y_test = \
         (X[train_index], X[test_index], y[train_index], y[test_index])
-    clf = tree.DecisionTreeClassifier()
+    clf = RandomForestClassifier(n_estimators=10, criterion='entropy')
     clf.fit(X_train, y_train)
     scores.append(clf.score(X_test, y_test))
 
@@ -45,7 +45,7 @@ param_grids = {
     "Random Forest": {"n_estimators": [10, 20, 50, 100]},
     "Hist Gradient Boosting": {"max_iter": [10, 20, 50, 100, 300, 500]},
 }
-cv = KFold(n_splits=2, shuffle=True, random_state=0)
+cv = KFold(n_splits=2, shuffle=True, random_state=0) ##Change to 5 fold, change estimators and histogram
 
 results = []
 for name, model in models.items():
